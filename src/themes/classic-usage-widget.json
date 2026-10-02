@@ -1750,7 +1750,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "Fable {claude.model.fable:usage_line}",
+            "template": "Fable {claude.model.fable.display:usage_line}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1796,7 +1796,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "Fable {claude.model.fable:usage_line}",
+            "template": "Fable {claude.model.fable.display:usage_line}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",

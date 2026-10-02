@@ -1170,6 +1170,45 @@ fn compact_quad_only_grows_when_the_automatic_floating_card_is_present() {
 }
 
 #[test]
+fn compact_fluent_quad_adds_a_fable_column_when_the_limit_is_available() {
+    use crate::models::{UsageData, UsageLimit, UsageSection};
+
+    let theme: ThemeDocument =
+        serde_json::from_str(include_str!("../themes/compact-fluent-quad.json")).unwrap();
+    let usage = AppUsageData::from_iter([(
+        ProviderId::Claude,
+        UsageData {
+            limits: vec![UsageLimit {
+                key: "weekly_scoped_fable".into(),
+                kind: "weekly_scoped".into(),
+                label: "Fable".into(),
+                model: Some("Fable".into()),
+                model_id: None,
+                scope: None,
+                is_active: true,
+                usage: UsageSection {
+                    available: true,
+                    percentage: 43.0,
+                    resets_at: None,
+                },
+            }],
+            ..Default::default()
+        },
+    )]);
+    let runtime = ThemeRuntime::new(true, false, false);
+    let (base_width, height) = resolve_surface_size(&theme, 0, None, runtime);
+
+    assert_eq!(
+        resolve_surface_size(&theme, 0, Some(&usage), runtime),
+        (base_width + 96, height)
+    );
+    assert!(theme.surfaces[0]
+        .children
+        .iter()
+        .any(|object| object.id == "fable-provider"));
+}
+
+#[test]
 fn segmented_progress_reserves_gaps_only_between_segments() {
     let mask = (0..34)
         .map(|position| segmented_position_visible(position, 34, 5, 1.0))
@@ -1878,7 +1917,7 @@ fn built_in_themes_are_valid_and_cannot_be_saved_as_editable_themes() {
 
 #[test]
 fn compact_fluent_quad_widget_respects_usage_direction() {
-    use crate::models::{CreditsSection, UsageData, UsageSection};
+    use crate::models::{CreditsSection, UsageData, UsageLimit, UsageSection};
 
     let theme: ThemeDocument =
         serde_json::from_str(include_str!("../themes/compact-fluent-quad.json")).unwrap();
@@ -1893,6 +1932,19 @@ fn compact_fluent_quad_widget_respects_usage_direction() {
             UsageData {
                 session: section.clone(),
                 weekly: section.clone(),
+                limits: (provider == ProviderId::Claude)
+                    .then(|| UsageLimit {
+                        key: "weekly_scoped_fable".into(),
+                        kind: "weekly_scoped".into(),
+                        label: "Fable".into(),
+                        model: Some("Fable".into()),
+                        model_id: None,
+                        scope: None,
+                        is_active: true,
+                        usage: section.clone(),
+                    })
+                    .into_iter()
+                    .collect(),
                 credits: Some(CreditsSection {
                     percentage: 25.0,
                     remaining: 24.1,
